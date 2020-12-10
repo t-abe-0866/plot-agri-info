@@ -10,6 +10,51 @@
  * files in this directory. Styles in this file should be added after the last require_* statement.
  * It is generally better to create a new file per style scope.
  *
- *= require_tree .
- *= require_self
  */
+ 
+.big_title{
+    font-size: 24px;
+}
+
+#address {
+    width: 400px;
+    height: 30px;
+}
+
+.form_size{
+    width: 1000px;
+}
+
+.save_form{
+    text-align: right;
+}
+
+.search_form{
+    text-align: right;
+}
+
+.search_group{
+    margin: 0px 5px;
+}
+
+#new_map {
+    display: none;
+}
+
+.full-back {
+    background-color: #008000;   /* 背景色指定 */
+}
+
+.text-center {
+    color:  #fff;                   /* 文字色指定 */
+}
+
+.col-sm-6 {
+    color:  #000;                   /* 文字色指定 */
+    background-color: #FFF;         /* 背景色指定 */
+    padding:  40px;                 /* 余白指定 */
+}
+
+.form-button {
+  margin: 40px 100px 10px;
+}
