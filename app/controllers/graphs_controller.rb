@@ -32,10 +32,13 @@ class GraphsController < ApplicationController
       @DISAPPEARANCE = 2
       #日の出
       @appearance_time = getSunPositionHourAngle(@APPEARANCE,@time,@map.longitude,@map.latitude)
+      @dsp_appearance_time = @appearance_time.strftime("%Y年%m月%d日 %H:%M:%S")
       #南中
       @meridian_time = getSunPositionHourAngle(@MERIDIAN,@time,@map.longitude,@map.latitude)
+      @dsp_meridian_time = @meridian_time.strftime("%Y年%m月%d日 %H:%M:%S")
       #日の入り
       @disappearance_time = getSunPositionHourAngle(@DISAPPEARANCE,@time,@map.longitude,@map.latitude)
+      @dsp_disappearance_time = @disappearance_time.strftime("%Y年%m月%d日 %H:%M:%S")
   
       # 基準日内で一分ごとにカウントしていく
       @AzimuthAndAltitude = Struct.new(:azimuth, :altitude)
@@ -46,9 +49,9 @@ class GraphsController < ApplicationController
       for i in 0..1439
         @timeconut = @time + (i * 60)
         @azimuth_altitude = getSunInfo(@timeconut,@map.longitude,@map.latitude)
-        @altitude_data[i][0] = @timeconut
+        @altitude_data[i][0] = @timeconut.strftime("%H:%M")
         @altitude_data[i][1] = @azimuth_altitude.altitude
-        @azimuth_data[i][0] = @timeconut
+        @azimuth_data[i][0] = @timeconut.strftime("%H:%M")
         @azimuth_data[i][1] = sin(DEG2RAD(@azimuth_altitude.azimuth)) * 90.0
         @t_azimuth_data[i][0] = @timeconut
         @t_azimuth_data[i][1] = @azimuth_altitude.azimuth
@@ -218,29 +221,29 @@ class GraphsController < ApplicationController
   
   #地平線の伏角(E)
   def GetHorizonDip(altitude)
-			if (0.0 >= altitude)
-				return 0.0
-			else
-				return 0.0353333 * sqrt(altitude)
-			end
+		if (0.0 >= altitude)
+			return 0.0
+		else
+			return 0.0353333 * sqrt(altitude)
+		end
   end
   
   #T:経過ユリウス年の算出
   def ElapsedTimeByJulian(time, time_dif)
     
     #K':2000/1/1 12:00からの経過日数
-    @@Y = time.year - 2000
-    @@M = time.month
-    @@D = time.day
+    @Y = time.year - 2000
+    @M = time.month
+    @D = time.day
     
     #1月, 2月は前年の 13月, 14月
-    if 2 >= @@M
-      @@Y -= 1
-      @@M += 12
+    if 2 >= @M
+      @Y -= 1
+      @M += 12
     end
     
     time_dif = 9.0
-  	@kDash = (365.0 * @@Y) + (30.0 * @@M) + @@D - (33.5) + ((3.0 * (@@M + 1.0)) / 5.0).floor + (@@Y / 4.0).floor  - (time_dif / 24.0)
+  	@kDash = (365.0 * @Y) + (30.0 * @M) + @D - (33.5) + ((3.0 * (@M + 1.0)) / 5.0).floor + (@Y / 4.0).floor  - (time_dif / 24.0)
   	
     #Δt:地球自転の遅れ：2000年を65秒とし、毎年1秒遅れる
   	@deltaT = (57.0 + (0.8 * (time.year - 1990.0))) / 86400.0
@@ -248,9 +251,9 @@ class GraphsController < ApplicationController
   	@G = ((time.hour * 3600.0) + (time.min * 60.0) + time.sec) / 86400.0
   	
   	#J2000からの経過ユリウス年
-  	@@T = (@kDash + @G + @deltaT) / 365.25
+  	@T = (@kDash + @G + @deltaT) / 365.25
   	
-  	return @@T
+  	return @T
   end
   
   #λ:黄経, β:黄緯により、黄道座標系を生成
@@ -317,44 +320,44 @@ class GraphsController < ApplicationController
   
   #赤道座標を算出
   def EquatorialCoordinate(t,ecliptic,epsilon)
-    @@equatorialcoordinate = Struct.new(:delta, :alpha)
+    @equatorialcoordinate = Struct.new(:delta, :alpha)
     
-    @@sinLambda = sin(DEG2RAD(epsilon.lambda))
-  	@@cosLambda = cos(DEG2RAD(epsilon.lambda))
-  	@@sinBeta = sin(DEG2RAD(epsilon.beta))
-  	@@cosBeta = cos(DEG2RAD(epsilon.beta))
-  	@@sinEcliptic = sin(DEG2RAD(ecliptic))
-  	@@cosEcliptic = cos(DEG2RAD(ecliptic))
+    @sinLambda = sin(DEG2RAD(epsilon.lambda))
+  	@cosLambda = cos(DEG2RAD(epsilon.lambda))
+  	@sinBeta = sin(DEG2RAD(epsilon.beta))
+  	@cosBeta = cos(DEG2RAD(epsilon.beta))
+  	@sinEcliptic = sin(DEG2RAD(ecliptic))
+  	@cosEcliptic = cos(DEG2RAD(ecliptic))
   
-  	@@U = (@@cosBeta * @@cosLambda)
-  	@@V = (-@@sinBeta * @@sinEcliptic) + (@@cosBeta * @@sinLambda * @@cosEcliptic)
-  	@@W = (@@sinBeta * @@cosEcliptic) + (@@cosBeta * @@sinLambda * @@sinEcliptic)
-  	@U = @@U
-  	@V = @@V
-  	@W = @@W
+  	@U = (@cosBeta * @cosLambda)
+  	@V = (-@sinBeta * @sinEcliptic) + (@cosBeta * @sinLambda * @cosEcliptic)
+  	@W = (@sinBeta * @cosEcliptic) + (@cosBeta * @sinLambda * @sinEcliptic)
+  	@U = @U
+  	@V = @V
+  	@W = @W
   
-  	@@tanAlpha = @@V / @@U
+  	@tanAlpha = @V / @U
   
-  	@@aTanAlpha = RAD2DEG(atan(@@tanAlpha))
-    if 0.0 > @@U
-      @@aTanAlpha += 180.0
+  	@aTanAlpha = RAD2DEG(atan(@tanAlpha))
+    if 0.0 > @U
+      @aTanAlpha += 180.0
     end
-  	@@aTanAlpha = ToAzimuthAngleRange(@@aTanAlpha)
+  	@aTanAlpha = ToAzimuthAngleRange(@aTanAlpha)
   
-  	@tanDelta = @@W / (sqrt((@@U**2) + @@V**2))
-  	@@aTanDelta = RAD2DEG(atan(@tanDelta))
+  	@tanDelta = @W / (sqrt((@U**2) + @V**2))
+  	@aTanDelta = RAD2DEG(atan(@tanDelta))
   	
-  	@@equatorialcoordinate = @@equatorialcoordinate.new(@@aTanDelta, @@aTanAlpha)
+  	@equatorialcoordinate = @equatorialcoordinate.new(@aTanDelta, @aTanAlpha)
       
-    return @@equatorialcoordinate
+    return @equatorialcoordinate
   end
   
   def ToAzimuthAngleRange(aTanAlpha)
-    @@results = aTanAlpha.modulo(360.0)
-    if @@results < 0
-      @@results += 360
+    @results = aTanAlpha.modulo(360.0)
+    if @results < 0
+      @results += 360
     end
-    return @@results
+    return @results
   end
   
   #太陽の視半径(Ｓ)を算出

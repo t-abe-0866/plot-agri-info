@@ -17,5 +17,5 @@ Rails.application.routes.draw do
   
   post 'map_save', to: 'homes#create'
   
-  resources :users, only: [:index, :show, :new, :create]
+  resources :users, only: [:new, :create]
 end

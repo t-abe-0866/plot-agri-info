@@ -1,56 +1,53 @@
-<div class="big_title">グラフ表示</div>
-<div >
-    <%= '日の出' %>
-    <%= @appearance_time %>
-</div>
-
-<div >
-    <%= '南中' %>
-    <%= @meridian_time %>
-</div>
-
-<div >
-    <%= '日の入り' %>
-    <%= @disappearance_time %>
-</div>
-
-<div >
-    <%= '計算時間' %>
-    <%= @result %>
-</div>
-
-<%= form_with url:graphs_path, method: :get, local: true do |f| %>
-  <script type="text/javascript">
-    $(function () {
-        $('#datetimepicker1').datetimepicker({
-          format: 'YYYY-MM-DD',
-          locale: 'ja',
-          dayViewHeaderFormat: 'YYYY年 MMM',
-        });
-    });
-  </script>
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-9">
-        <div class="form-group">
-          <div class="input-group" id="datetimepicker1" data-target-input="nearest">
-            <%= f.text_field :date, data: { target: '#datetimepicker1'} , value: @time%>
-            <section class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
-              <span class="input-group-text"><i class="fa fa-calendar"></i></span >
-            </section >
-          </div>
-            <%= f.collection_select :plot_no, current_user.maps, :plot_no, :plot_no, 
-            { include_blank: true, selected: @plot_no } %>
-            <input name="categoryII" value="" type="hidden" />
-            <%= hidden_field_tag :plot_no, @plot_no %>
-            <%= f.submit "検索", :class => 'submit_class_name_here' %>
-        </div>
+<body class="main-back">
+  <div class="title">グラフ表示</div>
+    <div class="inner_frame">
+      <div class="sun-info">
+        <div class="box-title">日の出時刻</div>
+        <p><%= @dsp_appearance_time %></p>
       </div>
+      
+      <div class="sun-info">
+        <div class="box-title">南中時刻</div>
+        <p><%= @dsp_meridian_time %></p>
+      </div>
+      
+      <div class="sun-info">
+        <div class="box-title">日の入り時刻</div>
+        <p><%= @dsp_disappearance_time %></p>
+      </div>
+      
+      <%= form_with url:graphs_path, method: :get, local: true do |f| %>
+        <script type="text/javascript">
+          $(function () {
+              $('#datetimepicker1').datetimepicker({
+                format: 'YYYY-MM-DD',
+                locale: 'ja',
+                dayViewHeaderFormat: 'YYYY年 MMM',
+              });
+          });
+        </script>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-9">
+              <div class="form-group">
+                <div class="input-group" id="datetimepicker1" data-target-input="nearest">
+                  <%= f.text_field :date, data: { target: '#datetimepicker1'} , value: @time%>
+                  <section class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                    <span class="input-group-text"><i class="fa fa-calendar"></i></span >
+                  </section >
+                </div>
+                  <%= f.collection_select :plot_no, current_user.maps, :plot_no, :plot_no, 
+                  { include_blank: true, selected: @plot_no } %>
+                  <%= f.submit "検索", :class => 'submit_class_name_here' %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      
+      <section class="form_size">
+          <%= line_chart  [ {name: '太陽高度', data: @altitude_data}, {name: '方位角', data: @azimuth_data} ], width: "1000px", height: "600px", colors: ["#28AFB0", "#EE964B"] %>
+      </section>
     </div>
   </div>
-<% end %>
-
-<section class="form_size">
-    <%= line_chart  [ {name: '太陽高度', data: @altitude_data}, {name: '方位角', data: @azimuth_data} ], width: "1000px", height: "600px" %>
-</section>
-
+</body>
