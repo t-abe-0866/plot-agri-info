@@ -32,30 +32,62 @@ class GraphsController < ApplicationController
       @DISAPPEARANCE = 2
       #日の出
       @appearance_time = getSunPositionHourAngle(@APPEARANCE,@time,@map.longitude,@map.latitude)
-      @dsp_appearance_time = @appearance_time.strftime("%Y年%m月%d日 %H:%M:%S")
+      @dsp_appearance_time = @appearance_time.strftime("%H:%M:%S")
+      
+      @azimuth_altitude_a = getSunInfo(@appearance_time,@map.longitude,@map.latitude)
       #南中
       @meridian_time = getSunPositionHourAngle(@MERIDIAN,@time,@map.longitude,@map.latitude)
-      @dsp_meridian_time = @meridian_time.strftime("%Y年%m月%d日 %H:%M:%S")
+      @dsp_meridian_time = @meridian_time.strftime("%H:%M:%S")
+      
+      @azimuth_altitude_b = getSunInfo(@meridian_time,@map.longitude,@map.latitude)
       #日の入り
       @disappearance_time = getSunPositionHourAngle(@DISAPPEARANCE,@time,@map.longitude,@map.latitude)
-      @dsp_disappearance_time = @disappearance_time.strftime("%Y年%m月%d日 %H:%M:%S")
+      @dsp_disappearance_time = @disappearance_time.strftime("%H:%M:%S")
+      
+      @azimuth_altitude_c = getSunInfo(@disappearance_time,@map.longitude,@map.latitude)
   
       # 基準日内で一分ごとにカウントしていく
-      @AzimuthAndAltitude = Struct.new(:azimuth, :altitude)
-      @azimuth_altitude = @AzimuthAndAltitude.new()
-      @altitude_data = Array.new(1440).map{Array.new(2,0)}
-      @azimuth_data = Array.new(1440).map{Array.new(2,0)}
-      @t_azimuth_data = Array.new(1440).map{Array.new(2,0)}
-      for i in 0..1439
+      #@AzimuthAndAltitude = Struct.new(:azimuth, :altitude)
+      #@azimuth_altitude = @AzimuthAndAltitude.new()
+      #@altitude_data = Array.new(1440).map{Array.new(2,0)}
+      #@azimuth_data = Array.new(1440).map{Array.new(2,0)}
+      #@t_azimuth_data = Array.new(1440).map{Array.new(2,0)}
+      
+      @Hours_data = Array.new(1441)
+      @Minutes_data = Array.new(1441)
+      @altitude_data = Array.new(1441)
+      @azimuth_data = Array.new(1441)
+      @real_azimuth = Array.new(1441)
+      
+      @t_azimuth_data = Array.new(1441)
+    
+      for i in 0..1440
         @timeconut = @time + (i * 60)
         @azimuth_altitude = getSunInfo(@timeconut,@map.longitude,@map.latitude)
-        @altitude_data[i][0] = @timeconut.strftime("%H:%M")
-        @altitude_data[i][1] = @azimuth_altitude.altitude
-        @azimuth_data[i][0] = @timeconut.strftime("%H:%M")
-        @azimuth_data[i][1] = sin(DEG2RAD(@azimuth_altitude.azimuth)) * 90.0
-        @t_azimuth_data[i][0] = @timeconut
-        @t_azimuth_data[i][1] = @azimuth_altitude.azimuth
+        #@altitude_data[i][0] = @timeconut.strftime("%H:%M")
+        #@altitude_data[i][1] = @azimuth_altitude.altitude
+        #@azimuth_data[i][0] = @timeconut.strftime("%H:%M")
+        #@azimuth_data[i][1] = sin(DEG2RAD(@azimuth_altitude.azimuth)) * 90.0
+        @t_azimuth_data[i] = @timeconut
+        #@t_azimuth_data[i][1] = @azimuth_altitude.azimuth
+        
+        @Hours_data[i] = @timeconut.hour
+        @Minutes_data[i] = @timeconut.min
+        @altitude_data[i] = @azimuth_altitude.altitude.floor(2)
+        @real_azimuth[i] = @azimuth_altitude.azimuth.floor(2)
+        @azimuth_data[i] = (sin(DEG2RAD(@azimuth_altitude.azimuth)) * 90.0).floor(2)
+        # 初期化
+        #@data[i] = { "time" => @timeconut, "altitude" => @azimuth_altitude.altitude, "azimuth" => sin(DEG2RAD(@azimuth_altitude.azimuth)) * 90.0 }
       end
+      gon.year = @time.year
+      gon.month = @time.month
+      gon.day = @time.day
+      gon.hours = @Hours_data
+      gon.minutes = @Minutes_data
+      gon.altitude = @altitude_data
+      gon.real_azimuth = @real_azimuth
+      
+      gon.azimuth = @azimuth_data
     end
   end
   

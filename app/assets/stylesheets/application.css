@@ -51,6 +51,10 @@
     text-align: right;
 }
 
+.a_form{
+    color: #eeeeee;
+}
+
 
 #new_map {
     display: none;
@@ -91,7 +95,7 @@
 .sun-info{
     display:inline-block;
     width: 300px;
-    height: 80px;
+    height: 110px;
     padding: 6px 15px;
     font-size: 20px;
     margin: 0px 15px 15px 15px;
@@ -104,4 +108,8 @@
 #map {
     height: 600px;
     width: 1000px;
+}
+
+.chart {
+    display: inline-block;
 }

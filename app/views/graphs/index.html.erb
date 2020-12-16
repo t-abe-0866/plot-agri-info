@@ -1,19 +1,14 @@
 <body class="main-back">
   <div class="title">グラフ表示</div>
     <div class="inner_frame">
-      <div class="sun-info">
-        <div class="box-title">日の出時刻</div>
-        <p><%= @dsp_appearance_time %></p>
+      <div>
+        <p>日付とプロット番号を入力して、検索を押すとプロット番号に選択した地点の情報を表示します。</p>
       </div>
       
-      <div class="sun-info">
-        <div class="box-title">南中時刻</div>
-        <p><%= @dsp_meridian_time %></p>
-      </div>
-      
-      <div class="sun-info">
-        <div class="box-title">日の入り時刻</div>
-        <p><%= @dsp_disappearance_time %></p>
+      <div>
+        </p>緯度 : <%= @map.longitude%>
+        <br>経度 : <%= @map.latitude%>
+        </p>
       </div>
       
       <%= form_with url:graphs_path, method: :get, local: true do |f| %>
@@ -36,18 +31,162 @@
                     <span class="input-group-text"><i class="fa fa-calendar"></i></span >
                   </section >
                 </div>
-                  <%= f.collection_select :plot_no, current_user.maps, :plot_no, :plot_no, 
-                  { include_blank: true, selected: @plot_no } %>
-                  <%= f.submit "検索", :class => 'submit_class_name_here' %>
+                <%= f.collection_select :plot_no, current_user.maps, :plot_no, :plot_no, 
+                { include_blank: true, selected: @plot_no } %>
+                <%= f.submit "検索", :class => 'submit_class_name_here' %>
               </div>
             </div>
           </div>
         </div>
-      <% end %>
       
-      <section class="form_size">
-          <%= line_chart  [ {name: '太陽高度', data: @altitude_data}, {name: '方位角', data: @azimuth_data} ], width: "1000px", height: "600px", colors: ["#28AFB0", "#EE964B"] %>
-      </section>
+      <div class="sun-info">
+        <div class="box-title">
+          <p>日の出時刻 : <%= @dsp_appearance_time %>
+          <br>高度 : <%= @azimuth_altitude_a.altitude.floor(2) %>
+          <br>方位角 : <%= @azimuth_altitude_a.azimuth.floor(2) %></p>
+        </div>
+      </div>
+      
+      <div class="sun-info">
+        <div class="box-title">
+          <p>南中時刻 : <%= @dsp_meridian_time %>
+          <br>高度 : <%= @azimuth_altitude_b.altitude.floor(2) %>
+          <br>方位角 : <%= @azimuth_altitude_b.azimuth.floor(2) %></p>
+        </div>
+      </div>
+      
+      <div class="sun-info">
+        <div class="box-title">
+          <p>日の入り時刻 : <%= @dsp_disappearance_time %>
+          <br>高度 : <%= @azimuth_altitude_c.altitude.floor(2) %>
+          <br>方位角 : <%= @azimuth_altitude_c.azimuth.floor(2) %></p>
+        </div>
+      </div>
+      
+      <% end %>
+      <div hidden>
+        <div id="altitudeTemplate" type="text/x-jquery-tmpl">
+          <span style="color: #ff0000;">太陽高度</span>
+          <span>${item.altitude}°　　　　</span>
+        </div>
+        <div id="azimuthTemplate" type="text/x-jquery-tmpl">
+          <span style="color: #ff0000;">方位角</span>
+          <span>${item.real_azimuth}°　　　　</span>
+        </div>
+      </div>
+      
+      <script type="text/javascript">
+      $(function () {
+        
+        var altitude_data = gon.altitude;
+        var azimuth_data = gon.azimuth;
+        var real_azimuth = gon.real_azimuth;
+        
+        var data = [];
+      
+        for (let step = 0; step <= 1440; step++) {
+          data[step] = { "Time": new Date(gon.year, gon.month, gon.day, gon.hours[step], gon.minutes[step], "00"), "altitude": altitude_data[step], "azimuth": azimuth_data[step], "real_azimuth": real_azimuth[step]};
+        }
+
+        CreateChart("#lineChart", "line", "太陽高度と方位角のグラフ");
+        
+        function CreateChart(chartID, seriesType, chartTitle) {
+        $(chartID).igDataChart({
+            width: "1000px",
+            height: "600",
+            title: chartTitle,
+            crosshairVisibility: "visible",
+            overviewPlusDetailPaneVisibility: "collapsed",
+            autoMarginWidth: 50,
+            horizontalZoomable: true,
+            verticalZoomable: true,
+            dataSource: data,
+            
+            axes: [
+              {
+                name: "xAxis", type: "categoryDateTimeX",dataSource: data,
+                formatLabel: function (item) {
+                  var ret = '';
+                  if (item.getHours() < 10) {
+                    ret += "0" + item.getHours();
+                  } 
+                  else{
+                    ret += item.getHours();
+                  }
+                  ret += ":";
+                  if (item.getMinutes() < 10) {
+                    ret += "0" + item.getMinutes();
+                  }
+                  else{
+                    ret += item.getMinutes();
+                  }
+                  return ret;
+                }, 
+                minimumValue: data[0]["Time"], 
+                maximumValue: data[1439]["Time"],
+                interval: 4 * 60 * 60 * 1000,
+                dateTimeMemberPath: "Time",
+                labelTextStyle: "8pt Verdana",
+              },
+              {
+                  name: "yAxis", type: "numericY", dataSource: data, minimumValue: -120, maximumValue: 120,
+                  interval: 30,
+                  labelTextStyle: "8pt Verdana",
+              }
+            ],
+            series: [
+                {
+                  type: seriesType,
+                  markerType: "none",
+                  xAxis: "xAxis",
+                  yAxis: "yAxis",
+                  name: "altitude" + "series",
+                  title: "太陽高度",
+                  valueMemberPath: "altitude",
+                  isTransitionInEnabled: true,
+                  isHighlightingEnabled: true,
+                  showTooltip: true,
+                  tooltipTemplate: "altitudeTemplate",
+                  thickness: 3,
+                  brush: "#ee964b"
+                },
+                {
+                  type: seriesType,
+                  markerType: "none",
+                  xAxis: "xAxis",
+                  yAxis: "yAxis",
+                  name: "azimuth" + "series",
+                  title: "方位角",
+                  valueMemberPath: "azimuth",
+                  isTransitionInEnabled: true,
+                  isHighlightingEnabled: true,
+                  showTooltip: true,
+                  tooltipTemplate: "azimuthTemplate",
+                  thickness: 3,
+                  brush: "#28afb0"
+                },
+                {
+                  name: "itemToolTipLayer",
+                  title: "itemToolTip",
+                  type: "itemToolTipLayer",
+                  useInterpolation: true,
+                },
+              {
+                name: "crosshairLayer",
+                type: "crosshairLayer",
+                title: "crosshairLayer",
+                brush: "#000000",
+                horizontalLineVisibility: "Collapsed",
+                useInterpolation: true
+              },
+            ]
+          });
+        }
+      });
+      </script>
+      <div id="lineChart" class="chart"></div>
     </div>
-  </div>
+  <div>
 </body>
+
+

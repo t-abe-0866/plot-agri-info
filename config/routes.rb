@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   
+  get 'toppages/index'
   constraints ->  request { request.session[:user_id].present? } do
     # ログインしてる時のパス
     root to: "homes#index"
